@@ -9,11 +9,11 @@ A fully functional, AI-powered chart dashboard built with Vue.js that dynamicall
 ## ✨ Features
 
 - 🎨 **Beautiful Modern UI** - Gradient backgrounds, glassmorphism, smooth animations
-- 🤖 **AI-Powered** - Generate charts from natural language prompts using OpenAI
-- 📊 **Multiple Chart Types** - Bar, Line, Pie, and Doughnut charts
-- 🎯 **Dual Modes** - AI mode for prompts, Manual mode for filtering
+- 🤖 **AI-Powered** - Generate charts and get text insights from natural language prompts
+- 📊 **Extensive Chart Support** - Bar, Line, Pie, Doughnut, Radar, Polar Area, Bubble, and Scatter charts
+- 🎯 **Triple Modes** - AI mode for chart prompts, Manual mode for filtering, and Chat Assistant for text insights
 - 📅 **Time Filtering** - Last 3 months, Last 6 months, or All time
-- 💾 **Sample Datasets** - Hardcoded data for testing without API calls
+- 💾 **Sample Datasets** - Hardcoded data including Monthly Sales, Products, Quarterly Revenue, Department Budget, and Simple Sales
 - 🔄 **Modular Components** - Reusable chart components with flexible props
 - 💾 **Export Charts** - Download charts as PNG images
 - 📱 **Responsive Design** - Works on desktop, tablet, and mobile
@@ -46,11 +46,12 @@ Copy the example environment file:
 cp .env.example .env
 ```
 
-Edit `.env` and add your OpenAI API key:
+Edit `.env` and add your API key:
 
 ```env
-VITE_OPENAI_API_KEY=your_actual_openai_api_key_here
-VITE_USE_MOCK_AI=false  # Set to false to use real OpenAI API
+VITE_OPENAI_API_KEY=your_actual_api_key_here
+VITE_USE_MOCK_AI=false  # Set to false to use real API
+VITE_API_BASE_URL=https://api.openai.com/v1 # Or https://openrouter.ai/api/v1 for OpenRouter
 ```
 
 > **Note**: The app works perfectly with mock data even without an API key!
@@ -74,6 +75,7 @@ Navigate to `http://localhost:5173/`
    - "Show monthly sales for last 6 months"
    - "Display revenue vs expenses as a line chart"
    - "Create a pie chart for product sales"
+   - "Compare product sales using a radar chart"
 3. Click **"✨ Generate Chart"** or press `Ctrl+Enter`
 4. View your dynamically generated chart!
 
@@ -82,20 +84,28 @@ Navigate to `http://localhost:5173/`
 1. Click **"🎯 Manual Mode"** in the header
 2. Use the filter controls to:
    - Select time range (Last 3 months, Last 6 months, All time)
-   - Choose chart type (Bar, Line, Pie, Doughnut)
-   - Pick dataset (Monthly Sales, Products, Quarterly, Departments)
+   - Choose chart type (Bar, Line, Pie, Doughnut, Radar, Polar Area, Bubble, Scatter)
+   - Pick dataset (Monthly Sales, Products, Quarterly, Departments, Simple Sales)
 3. Chart updates automatically!
 
-## 📊 Sample Datasets
+### Chat Assistant Mode
+
+1. Click **"� Chat Assistant"** in the header
+2. Ask questions about company data:
+   - "What is the company revenue?"
+   - "Tell me about sales growth"
+   - "How many employees do we have?"
+3. Receive text-based insights powered by AI!
+
+## �📊 Sample Datasets
 
 The application includes hardcoded sample data for testing:
 
 ### Monthly Sales Data
 
 ```javascript
-const sampleSalesData = [
+const monthlySalesData = [
   { month: "Jan", sales: 2000, expenses: 1500, revenue: 2500 },
-  { month: "Feb", sales: 2500, expenses: 1600, revenue: 2800 },
   // ... 12 months total
 ];
 ```
@@ -105,7 +115,6 @@ const sampleSalesData = [
 ```javascript
 const productSalesData = [
   { product: "Product A", sales: 12500, growth: 15 },
-  { product: "Product B", sales: 9800, growth: 8 },
   // ... 5 products total
 ];
 ```
@@ -125,6 +134,16 @@ const quarterlyRevenueData = [
 const departmentBudgetData = [
   { department: "Engineering", budget: 45000, spent: 42000 },
   // ... 5 departments total
+];
+```
+
+### Simple Sales Data
+
+```javascript
+const simpleSalesData = [
+  { month: "Jan", sales: 2000 },
+  { month: "Feb", sales: 2500 },
+  // ...
 ];
 ```
 
@@ -152,93 +171,38 @@ The most reusable component with two usage patterns:
 />
 ```
 
-**Props:**
-
-- `chartConfig` - Complete Chart.js configuration object
-- `chartType` - 'bar', 'line', 'pie', or 'doughnut'
-- `labels` - Array of labels for x-axis
-- `values` - Array of data values
-- `datasetLabel` - Label for the dataset
-- `title` - Chart title
-- `showClear` - Show clear button (default: true)
-- `showExport` - Show export button (default: true)
-
-**Events:**
-
-- `@clear` - Emitted when chart is cleared
-- `@export` - Emitted when chart is exported
-
 ### FilterControls Component
 
-```vue
-<FilterControls
-  initial-time-range="all"
-  initial-chart-type="bar"
-  initial-dataset="monthly"
-  :show-dataset-selector="true"
-  @filter-change="handleFilterChange"
-/>
-```
-
-**Props:**
-
-- `initialTimeRange` - 'last3months', 'last6months', or 'all'
-- `initialChartType` - 'bar', 'line', 'pie', or 'doughnut'
-- `initialDataset` - 'monthly', 'product', 'quarterly', or 'department'
-- `showDatasetSelector` - Show dataset selector (default: false)
-
-**Events:**
-
-- `@time-range-change` - Emitted when time range changes
-- `@chart-type-change` - Emitted when chart type changes
-- `@dataset-change` - Emitted when dataset changes
-- `@filter-change` - Emitted with all filter values
+Handles user input for manual chart generation, supporting time ranges, chart types, and dataset selection.
 
 ### PromptInput Component
 
-```vue
-<PromptInput :loading="false" @generate-chart="handleGenerateChart" />
-```
+Accepts natural language input for AI chart generation, featuring suggested examples.
 
-**Props:**
+### ChatBoard Component
 
-- `loading` - Show loading state (default: false)
-
-**Events:**
-
-- `@generate-chart` - Emitted with prompt text when user submits
+Provides a chat interface for text-based interaction with the AI assistant regarding company data.
 
 ## 🔌 API Integration
 
-### OpenAI Integration
+### OpenAI & OpenRouter Integration
 
-The app uses OpenAI's GPT-4 to generate chart configurations from natural language.
+The app uses OpenAI's API (compatible with OpenRouter) to generate chart configurations and text responses.
 
 **Setup:**
 
-1. Get an API key from [OpenAI Platform](https://platform.openai.com/)
+1. Get an API key from [OpenAI Platform](https://platform.openai.com/) or [OpenRouter](https://openrouter.ai/)
 2. Add to `.env`:
    ```env
    VITE_OPENAI_API_KEY=sk-...
    VITE_USE_MOCK_AI=false
+   VITE_API_BASE_URL=https://api.openai.com/v1 # or https://openrouter.ai/api/v1
    ```
 
 **How it works:**
 
-1. User enters prompt: "Show monthly sales as a bar chart"
-2. Prompt sent to GPT-4 with system instructions
-3. AI returns structured JSON:
-   ```json
-   {
-     "chartType": "bar",
-     "labels": ["Jan", "Feb", "Mar"],
-     "values": [2000, 2500, 1800],
-     "datasetLabel": "Sales",
-     "title": "Monthly Sales"
-   }
-   ```
-4. JSON converted to Chart.js configuration
-5. Chart rendered dynamically
+1. **Charts**: Prompts are sent to the completions endpoint (`gpt-3.5-turbo-instruct`) to generate structured JSON for Chart.js.
+2. **Text Chat**: Questions are sent to the chat completions endpoint (`gpt-4`) to generate natural language responses based on provided context.
 
 ### Mock AI (No API Key Required)
 
@@ -251,77 +215,7 @@ When `VITE_USE_MOCK_AI=true` or no API key is provided:
 
 **This works perfectly for testing and demonstration!**
 
-## 🎨 Customization
-
-### Adding New Datasets
-
-Edit `src/data/sampleData.js`:
-
-```javascript
-export const myCustomData = [
-  { label: "Item 1", value: 100 },
-  { label: "Item 2", value: 200 },
-];
-```
-
-### Changing Color Schemes
-
-Edit the color schemes in `src/services/aiService.js`:
-
-```javascript
-const colorSchemes = {
-  bar: {
-    backgroundColor: "rgba(102, 126, 234, 0.6)",
-    borderColor: "rgba(102, 126, 234, 1)",
-  },
-  // ... add your colors
-};
-```
-
-### Styling
-
-Global styles are in `src/assets/style.css`. Component-specific styles are scoped within each `.vue` file.
-
-## 📁 Project Structure
-
-```
-ai-chart-dashboard/
-├── src/
-│   ├── components/
-│   │   ├── ChartDisplay.vue      # Reusable chart component
-│   │   ├── FilterControls.vue    # Filter UI component
-│   │   ├── PromptInput.vue       # Prompt input component
-│   │   └── ChatBoard.vue         # (Legacy, not used)
-│   ├── data/
-│   │   └── sampleData.js         # Sample datasets & utilities
-│   ├── services/
-│   │   └── aiService.js          # AI integration & chart generation
-│   ├── assets/
-│   │   └── style.css             # Global styles
-│   ├── App.vue                   # Main application
-│   └── main.js                   # Entry point
-├── public/                       # Static assets
-├── .env                          # Environment variables (gitignored)
-├── .env.example                  # Environment template
-├── package.json                  # Dependencies
-├── vite.config.js                # Vite configuration
-└── README.md                     # This file
-```
-
-## 🛠️ Available Scripts
-
-```bash
-# Start development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Preview production build
-npm run preview
-```
-
-## 📝 Example Prompts
+## Example Prompts
 
 Try these prompts in AI mode:
 
@@ -330,8 +224,10 @@ Try these prompts in AI mode:
 - "Create a pie chart for product sales"
 - "Show department budget breakdown"
 - "Quarterly revenue trend as line chart"
-- "Product A sales over last 3 months"
-- "Compare all products as a bar chart"
+- "Compare product sales using a radar chart"
+- "Show department budget distribution as polar area"
+- "Visualize sales vs growth with a bubble chart"
+- "Scatter plot of marketing spend vs revenue"
 
 ## 🔧 Troubleshooting
 
@@ -346,6 +242,7 @@ Try these prompts in AI mode:
 - Verify API key is correct in `.env`
 - Check API key has credits
 - Set `VITE_USE_MOCK_AI=true` to use mock data instead
+- Check console logs for "AI Service Config" to verify settings
 
 ### Styles not loading?
 
